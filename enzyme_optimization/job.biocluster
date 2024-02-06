@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#SBATCH --job-name=enzymeOPT
+#SBATCH --time=12:00:00
+#SBATCH -p lowmem 
+#SBATCH -N 1
+#SBATCH -n 1 
+#SBATCH --mail-type=END
+#SBATCH --mail-user=yufenghe@illinois.edu
+
+#boost_path=/home/n-z/yufenghe/.conda/envs/ephoto/include
+#sundial_path=/home/n-z/yufenghe/.conda/envs/ephoto/
+#ephoto_path=/home/n-z/yufenghe/GitHub/BioCro-ePhotosynthesis/models/ePhotosynthesis_C/
+#g++ -O3 -g -fopenmp -Wall -ggdb3 -I$boost_path -I$ephoto_path/include  -I$sundial_path/include/ run_ephoto_test.cpp -L$ephoto_path/build -lEPhotosynthesis -Wl,-rpath=$ephoto_path/build
+
+./enzyme_opt.exe
