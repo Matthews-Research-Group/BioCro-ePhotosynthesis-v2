@@ -128,7 +128,7 @@ double EPS_run(const double& begintime,
        maindriver = new EPSDriver(theVars, begintime, stepsize, stoptime, maxSubSteps, abstol, reltol, 1, 1, Tp);
        std::vector<double> ResultRate = maindriver->run();
 
-       std::cout<<"with An = "<<ResultRate[0]<<std::endl; 
+       std::cout<<" "<<ResultRate[0]<<std::endl; 
 
        //write to file output.data, Append
 //       std::ofstream outfile("output.data",std::ios_base::app);
@@ -148,7 +148,7 @@ double myvfunc(const std:: vector<double> &parameter_sf, std::vector<double> &gr
 {
     EPS_inputs *f_data_ptr = (EPS_inputs *) f_data; 
     ++count;
-    std::cout << "this is the evalution # "<<count<<std::endl;  
+//    std::cout << "this is the evalution # "<<count<<std::endl;  
     std::cout<< "the scaling factors are ";
     print(parameter_sf);
     return EPS_run(f_data_ptr->begintime,
@@ -193,7 +193,7 @@ int main()
    infile.close();// 
    std::cout<<"default TotalE is"<<my_inputs.totalE<<"\n";
 //define optimizer    
-    nlopt::opt opt(nlopt::GN_ISRES, number_of_parameters);
+    nlopt::opt opt(nlopt::GN_AGS, number_of_parameters);
 //lower and upper bounds
     std::vector<double> lb(number_of_parameters,0.1);
     std::vector<double> ub(number_of_parameters,10.0);
@@ -204,7 +204,7 @@ int main()
 //constraints
     opt.add_inequality_constraint(myvconstraint, &my_inputs, 1e-8);
 //tolerance for stopping
-    opt.set_xtol_rel(1e-4);
+    opt.set_xtol_rel(1e-3);
 //initial guess
     std::vector<double> x(number_of_parameters,1.0);
     double maxf;
