@@ -4,6 +4,7 @@
 #include <map>
 #include <sstream>
 #include <algorithm>
+#include <stdlib.h> 
 
 #include <nlopt.hpp>
 
@@ -149,6 +150,7 @@ double myvfunc(const std:: vector<double> &parameter_sf, std::vector<double> &gr
     EPS_inputs *f_data_ptr = (EPS_inputs *) f_data; 
     ++count;
 //    std::cout << "this is the evalution # "<<count<<std::endl;  
+//    std::cout << "this is the evalution # with Ci of "<<f_data_ptr->Ci<<std::endl;  
     std::cout<< "the scaling factors are ";
     print(parameter_sf);
     return EPS_run(f_data_ptr->begintime,
@@ -168,10 +170,32 @@ double myvfunc(const std:: vector<double> &parameter_sf, std::vector<double> &gr
                    parameter_sf);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 //read in txt inputs
    EPS_inputs my_inputs;
+   //passing in command line arguments
+   //start with argv[1] since argv[0] is the program exe
+   for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
+                               * Note that we're starting on 1 because we don't need to know the 
+                               * path of the program, which is stored in argv[0] */
+// Check that we haven't finished parsing already
+// And, the argument is not a number, which is at even number position
+       if (i + 1 != argc && i%2 != 0) 
+       { 
+          if (strcmp(argv[i], "-r")==0) {
+            my_inputs.PAR = atof(argv[i + 1]);
+          } else if (strcmp(argv[i], "-t")==0) {
+            my_inputs.Tp = atof(argv[i + 1]);
+          } else if (strcmp(argv[i], "-c")==0) {
+            my_inputs.Ci = atof(argv[i + 1]);
+          } else {
+            std::cout << "Not enough or invalid arguments, please try again.\n";
+            exit(0);
+          }
+      }
+   }
+   std::cout<< "PAR, Tp, and Ci are "<<my_inputs.PAR<<","<<my_inputs.Tp<<","<<my_inputs.Ci<<std::endl;
    std::ifstream infile;
    infile.open("ProteinContentCal.txt");// 
    std::string line;
@@ -193,7 +217,7 @@ int main()
    infile.close();// 
    std::cout<<"default TotalE is"<<my_inputs.totalE<<"\n";
 //define optimizer    
-    nlopt::opt opt(nlopt::GN_AGS, number_of_parameters);
+    nlopt::opt opt(nlopt::GN_ISRES, number_of_parameters);
 //lower and upper bounds
     std::vector<double> lb(number_of_parameters,0.1);
     std::vector<double> ub(number_of_parameters,10.0);
