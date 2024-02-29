@@ -88,12 +88,12 @@ double EPS_run(const double& begintime,
              const double& PAR,
              const double& Ci, 
              const int&    maxSubSteps,
-             const double& totalE,
+             const double& totalE, //not used in this function
              const std::vector<std::string> &ename,
-             const std::vector<double> &vmax,
-             const std::vector<double> &kcat,
-             const std::vector<double> &mweight,
-             const std::vector<double> &parameter_sf)
+             const std::vector<double> &vmax, //not used in this function
+             const std::vector<double> &kcat, //not used in this function
+             const std::vector<double> &mweight, //not used in this function
+             const std::vector<double> &parameter_sf) //parameters to be optimized
 {
        bool record = false;
        std::string evn="InputEvn.txt";
