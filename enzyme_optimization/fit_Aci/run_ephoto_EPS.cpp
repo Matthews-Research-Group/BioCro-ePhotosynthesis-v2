@@ -48,10 +48,10 @@ void EPS_run(double begintime, double stoptime, double stepsize, double abstol, 
        maindriver = new EPSDriver(theVars, begintime, stepsize, stoptime, maxSubSteps, abstol, reltol, 1, 1, Tp,true);
        std::vector<double> ResultRate = maindriver->run();
 //       std::cout<<"assim,carboxy,pr are "<<ResultRate[0]<<","<<ResultRate[1]<<","<<ResultRate[2]<<std::endl; 
-       std::cout<<"assim is "<<ResultRate[0]<<std::endl; 
+//       std::cout<<"assim is "<<ResultRate[0]<<std::endl; 
 
        //write to file output.data, Append
-       std::ofstream outfile("output.data",std::ios_base::app);
+       std::ofstream outfile("output.data", std::ios::out | std::ios::app);
        outfile << ResultRate[0] << std::endl;
        outfile.close();
         if (theVars != nullptr) {
@@ -63,19 +63,17 @@ void EPS_run(double begintime, double stoptime, double stepsize, double abstol, 
 
 int main()
 {
-    double stoptime=5000.0, begintime=0.0, stepsize=0.5;
-//    double abstol=1e-5, reltol=1e-4;
-    double abstol=9.9e-6, reltol=1e-5;
-    double PAR= 1500.0;
-    double Tp = 25.0;
-//    double Cis[20] = {10,60,110,160,210,260,310,360,410,460,510,560,610,660,710,760,810,860,910,960};
-//    std::vector<double> Cis = {110,210,260,310,360,410,460,510,560,610,660};
-    std::vector<double> Cis = {460,510};
-    int maxSubSteps=2500;
-    int i; 
-    double Ci;
+   double stoptime=5000.0, begintime=0.0, stepsize=0.5;
+//   double abstol=1e-5, reltol=1e-4;
+   double abstol=9.9e-6, reltol=1e-5;
+   double PAR= 1500.0;
+   double Tp = 25.0;
+   std::vector<double> Cis = {100, 150, 200, 250, 300, 400, 500, 600, 800, 1200};
+   int maxSubSteps=2500;
+   int i; 
+   double Ci;
+   std::remove("output.data");
    for (i=0;i < Cis.size();i++) {
-    std::cout<<"i is "<<i<<std::endl; 
     Ci = Cis[i];
     EPS_run(begintime, stoptime, stepsize, abstol, reltol, Tp, PAR, Ci, maxSubSteps);
    }
