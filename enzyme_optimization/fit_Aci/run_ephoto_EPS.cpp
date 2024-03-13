@@ -14,8 +14,13 @@ using namespace ePhotosynthesis::drivers;
 using namespace ePhotosynthesis::modules;
 
 const boost::regex token("\\s+");
+struct EPS_inputs
+{
+    double alpha1=1.0;
+    double alpha2=1.0;
+};
 
-void EPS_run(double begintime, double stoptime, double stepsize, double abstol, double reltol, double Tp,double PAR, double Ci, int maxSubSteps)
+void EPS_run(double begintime, double stoptime, double stepsize, double abstol, double reltol, double Tp,double PAR, double Ci, int maxSubSteps,const EPS_inputs& EPSinput)
 {
        bool record = false;
        std::string evn="InputEvn.txt";
@@ -28,7 +33,17 @@ void EPS_run(double begintime, double stoptime, double stepsize, double abstol, 
        Variables *theVars = new Variables();
        readFile(enzymeFile, theVars->EnzymeAct);
 
-//       std::cout << "EnzymeAct size = " << theVars->EnzymeAct.size() << '\n';
+       theVars->EnzymeAct.at("V1") *= EPSinput.alpha1;
+       theVars->EnzymeAct.at("V2") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V3") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V5") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V6") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V7") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V8") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V9") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V10") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V13") *= EPSinput.alpha2;
+       theVars->EnzymeAct.at("V23") *= EPSinput.alpha2;
 
        //remove Ca and Light inputs from the text file. Instead, they are function inputs
        //theVars->TestCa = static_cast<double>(stof(inputs.at("CO2"), nullptr));
@@ -61,8 +76,9 @@ void EPS_run(double begintime, double stoptime, double stepsize, double abstol, 
        delete maindriver;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+   EPS_inputs my_inputs;
    double stoptime=5000.0, begintime=0.0, stepsize=0.5;
 //   double abstol=1e-5, reltol=1e-4;
    double abstol=9.9e-6, reltol=1e-5;
@@ -72,10 +88,22 @@ int main()
    int maxSubSteps=2500;
    int i; 
    double Ci;
+   //passing in command line arguments
+   //start with argv[1] since argv[0] is the program exe
+   for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
+                               * Note that we're starting on 1 because we don't need to know the 
+                               * path of the program, which is stored in argv[0] */
+     if (i==1) {
+       my_inputs.alpha1 = atof(argv[i]);
+     } else {
+       my_inputs.alpha2 = atof(argv[i]);
+     }
+   }
+   //std::cout<<my_inputs.alpha1<<","<<my_inputs.alpha2<<std::endl;
    std::remove("output.data");
    for (i=0;i < Cis.size();i++) {
     Ci = Cis[i];
-    EPS_run(begintime, stoptime, stepsize, abstol, reltol, Tp, PAR, Ci, maxSubSteps);
+    EPS_run(begintime, stoptime, stepsize, abstol, reltol, Tp, PAR, Ci, maxSubSteps,my_inputs);
    }
 
     return (0);
