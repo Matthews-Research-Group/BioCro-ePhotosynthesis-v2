@@ -63,7 +63,7 @@ get_vcmax_jmax <- function(A_Ci_df)
   soybean_ld11_fvcb_parameters$Jmax <- get_jmax(
     soybean$parameters$theta,              # dimensionless
     soybean$parameters$beta_PSII,          # dimensionless
-    soybean_ld11_fvcb_parameters$J,   # micromol / m^2 / s
+    soybean_ld11_fvcb_parameters$J,        # micromol / m^2 / s
     soybean$parameters$leaf_reflectance,   # dimensionless
     25,                                    # degrees C
     soybean$parameters$leaf_transmittance, # dimensionless
