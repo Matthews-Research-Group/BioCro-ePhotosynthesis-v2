@@ -6,8 +6,8 @@ FarquharModel<-function(LeafTemperature, Ci, Radiation_PAR, Air_O2,Vcmax25,Jmax2
   PhiPS2_base = 0.352
   a1 = 4.5   #electrons_per_carboxylation per C
   a2 = 10.5  #electrons_per_carboxylation per O2
-  leaf_reflectance   = 0.2  #BioCro R
-  leaf_transmittance = 0.2  #BioCro R
+  leaf_reflectance   = 0.1  #BioCro R
+  leaf_transmittance = 0.05  #BioCro R
   betaPSII = 0.5 #BioCro R
   TPU_c = 25.5   #BioCro R
   Ha    = 62.99  #BioCro R
@@ -25,13 +25,16 @@ FarquharModel<-function(LeafTemperature, Ci, Radiation_PAR, Air_O2,Vcmax25,Jmax2
   Kc = exp(38.05 - 79.43 / (R * LeafTemperatureKelvin))	
   Vcmax = Vcmax25 * exp(26.35 - 65.33 / (R * LeafTemperatureKelvin))
 
-  PhiPS2 = PhiPS2_base*other_parameters[1] + 0.022 * other_parameters[2]*LeafTemperature - 3.4 * other_parameters[3]*LeafTemperature^2.0 / 10000.0
+#  PhiPS2 = PhiPS2_base*other_parameters[1] + 0.022 * other_parameters[2]*LeafTemperature 
+#            - 3.4 * other_parameters[3]*LeafTemperature^2.0 / 10000.0
+  PhiPS2 = PhiPS2_base*other_parameters[1] + 0.022 * LeafTemperature 
+            - 3.4 * LeafTemperature^2.0 / 10000.0
   
 #  PhiPS2 = PhiPS2 * other_parameters[1]
   
   I = Radiation_PAR * PhiPS2 * (1.0 - leaf_reflectance - leaf_transmittance) * betaPSII
   
-  ThetaPS2 = PhotosynthesisTheta * other_parameters[4] + 0.01713 * LeafTemperature - 3.75 * LeafTemperature^2.0 / 10000.0
+  ThetaPS2 = PhotosynthesisTheta * other_parameters[2] + 0.01713 * LeafTemperature - 3.75 * LeafTemperature^2.0 / 10000.0
   
 #  ThetaPS2 = ThetaPS2 * other_parameters[2]
   Jmax = Jmax25 * exp(17.57 - 43.54 / (R * LeafTemperatureKelvin))

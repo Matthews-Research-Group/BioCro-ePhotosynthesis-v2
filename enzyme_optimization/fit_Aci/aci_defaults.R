@@ -5,8 +5,8 @@ ELECTRONS_PER_OXYGENATION   <- 5.25
 FIX_SOYBEAN_RD <- TRUE
 
 SOYBEAN_FIT_OPTIONS <- if (FIX_SOYBEAN_RD) {
-    list(Rd_at_25 = soybean$parameters$Rd,
-         Tp = 14.5) #fixed TPU estimated from LD11
+    list(Rd_at_25 = soybean$parameters$Rd)
+#         Tp = 14.5) #fixed TPU estimated from LD11
 } else {
     list()
 }
@@ -20,21 +20,21 @@ get_jmax <- function(
     leaf_reflectance,         # dimensionless
     leaf_temperature_celsius, # degrees C
     leaf_transmittance,       # dimensionless
-    Qp                        # micromol / m^2 / s
+    Qp,                        # micromol / m^2 / s
+    scaling_factors
 )
 {
-    scaling_factors = c(1.735, 0.835) 
+    base_PhiPSII = 0.352
+    base_PhiPSII = base_PhiPSII * scaling_factors[1]
+    base_theta   = base_theta   * scaling_factors[2]
     # Apply temperature response equations
     dark_adapted_phi_PSII <-
-        0.352 + 0.022 * leaf_temperature_celsius -
+        base_PhiPSII + 0.022 * leaf_temperature_celsius -
             3.4 * leaf_temperature_celsius^2 / 10000 # dimensionless
 
     theta <-
         base_theta + 0.018 * leaf_temperature_celsius -
             3.7e-4 * leaf_temperature_celsius^2 # dimensionless
-
-    dark_adapted_phi_PSII = dark_adapted_phi_PSII*scaling_factors[1]
-    theta  = theta*scaling_factors[2]
 
     # Absorbed light
     Qabs <- Qp * (1.0 - leaf_reflectance - leaf_transmittance)
