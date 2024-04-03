@@ -34,11 +34,13 @@ get_vcmax_jmax <- function(A_Ci_df)
   aci_data_exdf <- apply_gm(aci_data_exdf)
   
   # We can fit just one curve from the data set, although it is rare to do this
+  MY_FIT_OPTIONS <-list(Rd_at_25 = soybean$parameters$Rd,
+                        Tp       = 14.6) #fixed TPU estimated from LD11
   c3_aci_results <- fit_c3_aci(
     aci_data_exdf,
     a_column_name = 'A',
     Ca_atmospheric = 420,
-    fit_options = SOYBEAN_FIT_OPTIONS,
+    fit_options = MY_FIT_OPTIONS,
     atp_use = ELECTRONS_PER_CARBOXYLATION,
     nadph_use = ELECTRONS_PER_OXYGENATION * 2
   )
@@ -60,14 +62,18 @@ get_vcmax_jmax <- function(A_Ci_df)
   # One complication is that PhotoGEA returns a value for J, but not Jmax. In
   # BioCro, values of PhiPSII, Q, and Jmax are used to determine J. Here, we will
   # solve those equations for Jmax.
+  leaf_reflectance   = 0.1
+  leaf_transmittance = 0.05
+  scaling_factors = c(0.72, 0.64) #averaged from 2021 and 2022 
   soybean_ld11_fvcb_parameters$Jmax <- get_jmax(
     soybean$parameters$theta,              # dimensionless
     soybean$parameters$beta_PSII,          # dimensionless
     soybean_ld11_fvcb_parameters$J,        # micromol / m^2 / s
-    soybean$parameters$leaf_reflectance,   # dimensionless
+    leaf_reflectance,   # dimensionless
     25,                                    # degrees C
-    soybean$parameters$leaf_transmittance, # dimensionless
-    mean(aci_data_exdf[, 'PAR'])              # micromol / m^2 / s
+    leaf_transmittance, # dimensionless
+    mean(aci_data_exdf[, 'PAR']),              # micromol / m^2 / s
+    scaling_factors
   )
   return(c(soybean_ld11_fvcb_parameters$Vcmax,soybean_ld11_fvcb_parameters$Jmax,soybean_ld11_fvcb_parameters$TPU))
 }
