@@ -139,7 +139,7 @@ aci_fitting_2021<-function(scaling_factors){
       scaling_factors
   )
   
-  return(as.data.frame(soybean_ld11_fvcb_parameters_2021))
+  return(soybean_ld11_fvcb_parameters_2021)
 } #end function aci_fitting_2021
 
 aci_fitting_2022<-function(scaling_factors){
@@ -203,7 +203,7 @@ aci_fitting_2022<-function(scaling_factors){
   
   # Check the CO2_r_sp values from one curve to confirm that we have a 16 point
   # curve where points 9 and 10 repeat the initial setpoint value
-  print(licor_data[licor_data[, 'curve_identifier'] == licor_data[1, 'curve_identifier'], 'CO2_r_sp'])
+  # print(licor_data[licor_data[, 'curve_identifier'] == licor_data[1, 'curve_identifier'], 'CO2_r_sp'])
   
   # Make sure the data meets basic requirements
   check_licor_data(licor_data, 'curve_identifier', 16, 'CO2_r_sp')
@@ -311,10 +311,10 @@ aci_fitting_2022<-function(scaling_factors){
       scaling_factors
   )
   
-  return(as.data.frame(soybean_fvcb_parameters))
+  return(soybean_fvcb_parameters)
 } #end function aci_fitting_2022 
 
-fit_AQ<-function(Vcmax, Jmax,TPU,year){
+fit_AQ<-function(Vcmax, Jmax,TPU,year,lbs,ubs){
   library(nloptr)
   source("FarquharModel.R")
   #PhiPSII_func<-function(LeafTemperature,sf) {
@@ -338,7 +338,7 @@ fit_AQ<-function(Vcmax, Jmax,TPU,year){
   Jmax25   = Jmax    #LD11
   Rate_TPu = TPU     #LD11
   
-  init_guess = c(1,1)
+  init_guess = rep(1,length(lbs)) 
   best_par = c()
   #here we fit to each replicate separately
   for (curve_id in unique(obs_An$curve_identifier)){
@@ -370,11 +370,11 @@ fit_AQ<-function(Vcmax, Jmax,TPU,year){
     # opt_results = hjk(init_guess, obj_func)
     # best_par = rbind(best_par,c(opt_results$par,opt_results$value))
     opt_results = nloptr(x0 = init_guess, eval_f = obj_func, 
-                         lb = c(0.5,0.5),
-                         ub = c(2.0,2.0),
+                         lb = lbs,
+                         ub = ubs,
                          opts = list("algorithm" = "NLOPT_LN_SBPLX","xtol_rel"=1.0e-6))
     best_par = rbind(best_par,c(opt_results$solution,opt_results$objective))
   }
   best_par_mean = colMeans(best_par)
-  return(best_par_mean) #par1, par2, rmse
+  return(best_par_mean) #par1, par2,..., rmse
 } # end function fit_AQ
