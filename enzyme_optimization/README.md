@@ -1,4 +1,7 @@
 # This folder contains scripts for running enzyme optimizations using [nlopt](https://nlopt.readthedocs.io/en/latest/)
+### Important!!!
+Both **Einput7.txt** and **ProteinContentCal.txt** are needed to run the optimization. Currently, they both have the Vmax values of some same enzymes. Please double check them to make sure their Vmax values are identical!
+
 ### Prerequisites: 
 - miniconda/anaconda - (optional but recommended)
 - cmake
