@@ -17,8 +17,11 @@
 #include "modules/PR.hpp"
 #include "drivers/drivers.hpp"
 #include "Variables.hpp"
+#include "globals.hpp"
 
 #define number_of_parameters 25
+//remove PR ones, we then have 18 to optimize
+//#define number_of_parameters 18 
 using namespace ePhotosynthesis;
 using namespace ePhotosynthesis::drivers;
 using namespace ePhotosynthesis::modules;
@@ -207,6 +210,7 @@ int main(int argc, char* argv[])
        if (ss >> name>> vmax >> kcat >> mweight)
        {
           if(name=="V16") continue; // remove V16: ATP synthase
+//          if(name=="V112"||name=="V113"||name=="V121"||name=="V122"||name=="V123"||name=="V124"||name=="V131") continue; // remove photorespiration from optimization 
           my_inputs.ename.push_back(name);
           my_inputs.vmax.push_back(vmax);
           my_inputs.kcat.push_back(kcat);
