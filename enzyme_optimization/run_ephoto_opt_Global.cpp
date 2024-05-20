@@ -33,8 +33,8 @@ struct EPS_inputs
     double stoptime=5000.0;
     double begintime=0.0;
     double stepsize=0.5;
-    double abstol=9.9e-6;
-    double reltol=1e-5;
+    double abstol=1e-6;
+    double reltol=1e-6;
     double PAR= 1500.0;
     double Tp = 25.0;
     double Ci = 300; 
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
           }
       }
    }
-   std::cout<< "PAR, Tp, and Ci are "<<my_inputs.PAR<<","<<my_inputs.Tp<<","<<my_inputs.Ci<<std::endl;
+   std::cout<< "PAR Tp Ci are "<<my_inputs.PAR<<" "<<my_inputs.Tp<<" "<<my_inputs.Ci<<std::endl;
    std::ifstream infile;
    infile.open("ProteinContentCal.txt");// 
    std::string line;
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
        }
    }
    infile.close();// 
-   std::cout<<"default TotalE is"<<my_inputs.totalE<<"\n";
+   std::cout<<"default TotalE is "<<my_inputs.totalE<<"\n";
 //define optimizer    
     nlopt::opt opt(nlopt::GN_ISRES, number_of_parameters);
 //lower and upper bounds
