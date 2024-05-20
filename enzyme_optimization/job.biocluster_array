@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#SBATCH -A mlmgroup_ripe
+#SBATCH --job-name=ct20_1
+#SBATCH --time=12:00:00
+#SBATCH -p lowmem 
+#SBATCH -N 1
+#SBATCH -n 1 
+#SBATCH --mail-type=END
+#SBATCH --mail-user=yufenghe@illinois.edu
+#SBATCH -o slurm_results/slurm-%A_%a.out
+#SBATCH --array 1-27
+
+r_array=(200 800 1500)
+t_array=(15 25 35)
+c_array=(150 400 600)
+
+##we run three cases, each case repeats 5 times
+##1-5 -> 0; 6-10 -> 1; 11-15 -> 2
+#loop_value=$(( ( ${SLURM_ARRAY_TASK_ID} - 1 ) / 5 ))
+#echo "loop Number: $loop_value"
+#echo "-r 800 -t ${t_array[$loop_value]} -c 400"
+#./enzyme_opt_global.exe -r 800 -t ${t_array[$loop_value]} -c 400
+
+# Define the range of coordinates
+range=3
+total=$((range * range * range))
+# Define the sequence number to convert
+seq_num=${SLURM_ARRAY_TASK_ID}
+# Check if the sequence number is within the valid range
+if (( seq_num < 1 || seq_num > total )); then
+    echo "Error: Sequence number out of range"
+    exit 1
+fi
+# Calculate the corresponding coordinates
+x=$(( (seq_num - 1) / (range * range) + 1 ))
+remaining=$(( (seq_num - 1) % (range * range) ))
+y=$(( remaining / range + 1 ))
+z=$(( remaining % range + 1 ))
+
+echo "-r ${r_array[$((x-1))]} -t ${t_array[$((y-1))]} -c ${c_array[$((z-1))]}"
+./enzyme_opt_global.exe -r ${r_array[$((x-1))]} -t ${t_array[$((y-1))]} -c ${c_array[$((z-1))]} 
