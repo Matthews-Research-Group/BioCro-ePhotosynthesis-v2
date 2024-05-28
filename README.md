@@ -1,5 +1,5 @@
 # BioCro-ePhotosynthesis
-Coupled BioCro (with the new skeleton module library) and ePhotosynthesis (C++) through linking dynamic libraries. 
+Coupling BioCro (with the new skeleton module library) and ePhotosynthesis (C++) through linked dynamic libraries. 
 
 Tested on `MacOS 11.3.1` with `x86_64-apple-darwin13.4.0-clang` and `linux` on biocluster with `GCC/.8.2.0`
 
