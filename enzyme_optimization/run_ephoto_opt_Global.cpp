@@ -79,7 +79,7 @@ double myvconstraint(const std::vector<double> &parameters, std::vector<double> 
     }
     //take the difference between this totalE and the default total 
     //std::cout<<"constrain_E "<<constrain_E;
-    return constrain_E - (d->totalE); 
+    return abs(constrain_E - (d->totalE)); 
 } 
 
 double EPS_run(const double& begintime, 
@@ -98,7 +98,9 @@ double EPS_run(const double& begintime,
              const std::vector<double> &mweight, //not used in this function
              const std::vector<double> &parameter_sf) //parameters to be optimized
 {
-       bool record = false;
+//since we check if metabolites reach steady-state, we have to use this to calculate the metabolites.
+       bool record = true;
+       bool saveMetabolite = false;
        std::string evn="InputEvn.txt";
        std::string atpcost="InputATPCost.txt";
        std::string enzymeFile="Einput7.txt";
@@ -124,6 +126,7 @@ double EPS_run(const double& begintime,
        if (stoi(inputs.at("SucPath"), nullptr) > 0)  CM::setTestSucPath(true);
        theVars->TestATPCost = stoi(inputs.at("ATPCost"), nullptr);
        theVars->record = record;
+       theVars->saveMetabolite = saveMetabolite;
        theVars->useC3 = true;     //for EPSDriver
        theVars->RUBISCOMETHOD = 2;
        PR::setRUBISCOTOTAL(3);
@@ -225,14 +228,21 @@ int main(int argc, char* argv[])
 //lower and upper bounds
     std::vector<double> lb(number_of_parameters,0.1);
     std::vector<double> ub(number_of_parameters,10.0);
+//change PR enzymes bounds
+//    for (int i = 11; i < 18; i++) {
+//        lb[i] = 0.2; 
+//    }
     opt.set_lower_bounds(lb);
     opt.set_upper_bounds(ub);
+//set population
+    opt.set_population(100);
 //objective function
     opt.set_max_objective(myvfunc, &my_inputs);
 //constraints
-    opt.add_inequality_constraint(myvconstraint, &my_inputs, 1e-8);
+//    opt.add_inequality_constraint(myvconstraint, &my_inputs, 1e-8);
+    opt.add_inequality_constraint(myvconstraint, &my_inputs, 100.0);
 //tolerance for stopping
-    opt.set_xtol_rel(1e-3);
+    opt.set_xtol_rel(1e-2);
 //initial guess
     std::vector<double> x(number_of_parameters,1.0);
     double maxf;
