@@ -150,6 +150,30 @@ double EPS_run(const double& begintime,
        return ResultRate[0];
 }
 
+std::vector<double> readValuesFromFile(const std::string& filename) {
+    std::ifstream inputFile(filename);
+    if (!inputFile) {
+        std::cerr << "Error opening file" << std::endl;
+        return {};
+    }
+
+    std::vector<double> values;
+    std::string line;
+
+    // Read the file line by line
+    while (std::getline(inputFile, line)) {
+        std::istringstream iss(line);
+        double value;
+        // Read each value separated by space and add to the vector
+        while (iss >> value) {
+            values.push_back(value);
+        }
+    }
+
+    inputFile.close();
+    return values;
+}
+
 int main(int argc, char* argv[])
 {
 //read in txt inputs
@@ -200,35 +224,8 @@ int main(int argc, char* argv[])
 
     EPS_inputs *f_data_ptr =  &my_inputs; 
 //define scaling factors
-//optimized sf under stress condition
-//    std::vector<double> parameter_sf = 
-//         {1.729320,1.284470,0.306745,0.463272,0.673893,
-//          0.164339,1.267830,1.564870,0.156517,1.002530,
-//          0.154232,0.102127,0.105518,0.164151,0.105757,
-//          0.214427,0.104253,0.102358,0.195637,0.104383,
-//          0.110733,0.227359,1.078470,0.104277,9.809930};
-//      std::vector<double> parameter_sf =
-//          {1.75467,0.833152,0.308958,0.522315,0.719071,
-//           0.197767,0.452505,1.5493,0.188598,0.763882,
-//           0.129092,0.102188,0.14706,0.168684,0.108127,
-//           0.132098,0.100067,0.100985,0.144016,0.100606,
-//           8.76502,0.104949,4.30112,3.08833,9.8285};
-      std::vector<double> parameter_sf =
-           {
-1.74034,0.50264,0.320769,0.486435,0.731483,
-0.212733,0.451765,1.77219,0.205508,1.01166,
-0.101067,0.100789,0.122566,0.290642,0.128437,
-0.11272,0.170401,0.11419,0.980998,0.90357,
-2.7089,3.83504,3.53808,8.45217,0.100058
-           };
-//optimized sf under normal condition
-//    std::vector<double> parameter_sf = 
-//           {1.40718,2.30619,0.786811,1.76916,1.60138,
-//            0.530108,1.15108,3.85515,0.598773,3.2103,
-//            0.102244,0.100635,0.100125,0.100037,0.101139,
-//            0.10011,0.389967,0.100026,2.52461,2.05878,
-//            7.51546,3.63259,0.518466,8.83049,0.100428};
-//     std::vector<double> parameter_sf(25, 1.0);
+    const std::string filename = "optimized_enzyme_scaling_factors.txt";
+    std::vector<double> parameter_sf = readValuesFromFile(filename);
 //run EPS Driver 
     EPS_run(f_data_ptr->begintime,
                    f_data_ptr->stoptime, 
