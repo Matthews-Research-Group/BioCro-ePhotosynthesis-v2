@@ -1,15 +1,17 @@
 # Load the stringr package
 library(stringr)
-slurm_patterns = c("slurm-871062","slurm-871253","slurm-871280","slurm-871307")
+slurm_patterns = c("slurm-900219","slurm-900470","slurm-900989")
 results_path = "../slurm_results_test"
-repeats = 2 #the nth repetition
+set = 1
+rep = 1
+para_best_final = c()
 for (ptn in slurm_patterns){
   all_files = dir(results_path,pattern=ptn,full.names=TRUE)
   all_files_ordered = all_files[order(as.numeric(gsub("\\D", "", all_files)))]
   print((all_files_ordered))
   #first, we have to remove some lines with the CVODE warning messages
   #i use a vim script to do this
-  if(TRUE){
+  if(set==3){
     env_conditions = c() 
     for (file in all_files_ordered){
      first_line <- readLines(file, n = 1)
@@ -23,9 +25,9 @@ for (ptn in slurm_patterns){
      Sys.sleep(2)
     }
     colnames(env_conditions) = c("Q","T","Ci")
-    saveRDS(env_conditions,"env_conditions.rds")
+    saveRDS(env_conditions,paste0("env_conditions_Set",set,"Rep",rep,".rds"))
   }else{
-    env_conditions = readRDS("env_conditions.rds")
+    env_conditions = readRDS(paste0("env_conditions_Set",set,"Rep",rep,".rds"))
   }
   print("starting second step......")
   #second, we get the last para values 
@@ -47,6 +49,7 @@ for (ptn in slurm_patterns){
     print(totalE)
   }
   para_best_all = cbind(env_conditions,para_best_all)
-  saveRDS(para_best_all,paste0("para_best_all_",repeats,".rds"))
-  repeats = repeats + 1
+  para_best_final = rbind(para_best_final,para_best_all)
+  set = set + 1
 }
+saveRDS(para_best_final,paste0("para_best_all_Rep",rep,".rds"))
