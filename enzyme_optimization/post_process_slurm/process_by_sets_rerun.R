@@ -1,0 +1,55 @@
+# Load the stringr package
+library(stringr)
+slurm_patterns = c("slurm-906915")
+set = 1
+rep = 3
+results_path = paste0("../slurm_results_rep",rep,"_rerun")
+para_best_final = c()
+for (ptn in slurm_patterns){
+  all_files = dir(results_path,pattern=ptn,full.names=TRUE)
+  all_files_ordered = all_files[order(as.numeric(gsub("\\D", "", all_files)))]
+  print((all_files_ordered))
+  #first, we have to remove some lines with the CVODE warning messages
+  #i use a vim script to do this
+  if(set==1){
+    env_conditions = c() 
+    for (file in all_files_ordered){
+     first_line <- readLines(file, n = 1)
+    # Extract numbers from the string
+     numbers <- str_extract_all(first_line, "\\d+")[[1]]
+     numbers <- as.numeric(numbers)
+     print(numbers)
+     env_conditions = rbind(env_conditions,numbers)
+     cmd = paste("vi -c 'source scripts.vim'",file) 
+     # Call the system command
+     system(cmd)
+     Sys.sleep(2)
+    }
+    colnames(env_conditions) = c("Q","T","Ci")
+    saveRDS(env_conditions,paste0("env_conditions_reRun_Rep",rep,".rds"))
+  }else{
+  }
+  print("starting second step......")
+  #second, we get the last para values 
+  para_best_all = c()
+  for (i in 1:length(all_files_ordered)){
+    file = all_files_ordered[i]
+    print(file)
+    x = read.table(file)
+    enzyme_info = read.table('../ProteinContentCal_simple.txt')
+    enzyme_names = enzyme_info$V1
+    enzyme_names = as.character(enzyme_names)
+  
+    para_best = x[nrow(x),]
+    para_best = as.numeric(para_best[5:30])
+    names(para_best) = c(enzyme_names,"Aopt")
+    para_best_all = rbind(para_best_all,para_best)
+  
+    totalE = sum(enzyme_info$V3*para_best[1:25]/enzyme_info$V5*enzyme_info$V6/1000)
+    print(totalE)
+  }
+  para_best_all = cbind(env_conditions,para_best_all)
+  para_best_final = rbind(para_best_final,para_best_all)
+  set = set + 1
+}
+saveRDS(para_best_final,paste0("para_best_reRun_Rep",rep,".rds"))
