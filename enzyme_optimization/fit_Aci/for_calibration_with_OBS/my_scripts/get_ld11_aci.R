@@ -127,10 +127,24 @@ c3_aci_results$parameters <- set_variable(
     })
 )
 
+
+#get mean Tleaf for each identifier
+average_Tleaf = aggregate(licor_data[, 'TleafCnd'],list(licor_data[, 'curve_identifier']),mean)
+# Get TPU at 25 C
+c3_aci_results$parameters <- set_variable(
+    c3_aci_results$parameters,
+    'TPU_at_25',
+    units = c3_aci_results$parameters$units$Tp,
+    value = list(get_TPU_at_25(
+             c3_aci_results$parameters[,'Tp'],
+            average_Tleaf$x)
+            )
+)
+
 # Write the parameter values to a CSV file
 col_to_write <- c(
     'file_name', 'day', 'year', 'instrument', 'plot',
-    'Vcmax_at_25', 'J_at_25', 'Jmax_at_25', 'Rd_at_25', 'Tp'
+    'Vcmax_at_25', 'J_at_25', 'Jmax_at_25', 'Rd_at_25', 'TPU_at_25'
 )
 
 write.csv.exdf(
@@ -139,7 +153,7 @@ write.csv.exdf(
 )
 
 # Write average values to a CSV file
-param <- c('Vcmax_at_25', 'J_at_25', 'Jmax_at_25', 'Rd_at_25', 'Tp')
+param <- c('Vcmax_at_25', 'J_at_25', 'Jmax_at_25', 'Rd_at_25', 'TPU_at_25')
 
 avg_param <- do.call(rbind, lapply(param, function(pn) {
     vals <- c3_aci_results$parameters[, pn]
