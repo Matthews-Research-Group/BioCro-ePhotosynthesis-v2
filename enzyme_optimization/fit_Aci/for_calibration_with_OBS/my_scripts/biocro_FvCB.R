@@ -22,7 +22,7 @@ Vcmax_multiplier<-function(T_kelvin){
   return(multiplier)
 }
 
-BioCro_FvCB <- function(Qin,Tleaf,Ci,Vcmax_at_25,Jmax_at_25,Rd,TPU_at_25){
+BioCro_FvCB <- function(Qin,Tleaf,Ci,Vcmax_at_25,Jmax_at_25,Rd_at_25,TPU_at_25){
   # Make an alternate BioCro comparison; here we use BioCro:FvCB, so we have to
   # manually calculate the temperature response of several parameters using code
   # copied from c3photoC and slightly modified for R
