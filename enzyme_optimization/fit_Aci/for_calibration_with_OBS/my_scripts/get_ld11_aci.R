@@ -11,6 +11,8 @@ library(BioCro)
 # Load tools
 source('aci_defaults.R')
 
+source('biocro_FvCB.R') #Vcmax_multiplier 
+
 # Define a vector of paths to the files we wish to load
 file_paths <- c(
     file.path('..', 'aci_curves_2021', '2021-08-04 ed ripe1.xlsx'),
@@ -94,6 +96,8 @@ licor_data <- apply_gm(licor_data)
 
 # Calculate temperature-dependent values of C3 photosynthetic parameters
 licor_data <- calculate_arrhenius(licor_data, c3_arrhenius_bernacchi)
+# overwrite arrehenius with a new vcmax temperature response
+licor_data[, 'Vcmax_norm'] <- Vcmax_multiplier(licor_data[, 'TleafCnd']+273.15)
 
 # Write to a CSV
 write.csv.exdf(licor_data, file = 'ld11_aci.csv')
