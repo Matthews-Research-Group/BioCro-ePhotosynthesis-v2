@@ -3,7 +3,7 @@ arrhenius_exponential <- function(scaling, activation_energy, temperature_k) {
     exp(scaling - activation_energy / (ideal_gas_constant * temperature_k))
 }
 
-Vcmax_new<-function(Vcmax25,T_kelvin){
+Vcmax_multiplier<-function(T_kelvin){
   #Eq. 10 in,
   #Scafaro, A.P., Posch, B.C., Evans, J.R. et al. Rubisco deactivation and chloroplast electron transport rates co-limit photosynthesis above optimal leaf temperature in terrestrial plants. Nat Commun 14, 2820 (2023). https://doi.org/10.1038/s41467-023-38496-4
   Tgrowth = 24
@@ -17,9 +17,9 @@ Vcmax_new<-function(Vcmax25,T_kelvin){
   term2 = 1 + exp(Tref*(deltaS - Hd)/(Tref*R))
   term3 = 1 + exp((T_kelvin*deltaS - Hd)/(T_kelvin*R))
   
-  Vcmax = Vcmax25 * term1 * term2 / term3
+  multiplier = term1 * term2 / term3
   
-  return(Vcmax)
+  return(multiplier)
 }
 
 BioCro_FvCB <- function(Qin,Tleaf,Ci,Vcmax,Jmax,Rd,TPU){
@@ -67,8 +67,8 @@ BioCro_FvCB <- function(Qin,Tleaf,Ci,Vcmax,Jmax,Rd,TPU){
           Kc = arrhenius_exponential(38.05, 79.43e3, Tleaf_K),
           Ko = arrhenius_exponential(20.30, 36.38e3, Tleaf_K),
           Rd = Rd_at_25 * arrhenius_exponential(18.72, 46.39e3, Tleaf_K),
-          # Vcmax = Vcmax_new(Vcmax_at_25 , Tleaf_K),
-          Vcmax = Vcmax_at_25 * arrhenius_exponential(26.35, 65.33e3, Tleaf_K),
+          Vcmax = Vcmax_at_25 * Vcmax_multiplier(Tleaf_K), #use a new temperature response function
+          #Vcmax = Vcmax_at_25 * arrhenius_exponential(26.35, 65.33e3, Tleaf_K),
           TPU = TPU * TPU_rate_multiplier,
           J = J
       )
