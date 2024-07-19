@@ -4,8 +4,8 @@ library(ggplot2)
 library(reshape2)
 source("biocro_FvCB.R")
 
-plot_type = 1 #1:ACi; 2: AQ
-year = 2021
+plot_type = 2 #1:ACi; 2: AQ
+year = 2022
 
 if(plot_type == 1){
   parameters <- read.csv.exdf("ld11_aci_fit_parameters.csv")
@@ -93,7 +93,7 @@ if(plot_type == 1){
     geom_line() + geom_point(size=3) +
     labs(x = bquote(Q~(mu*mol ~ m^-2 ~ s^-1)), 
          y = bquote(An~(mu*mol ~ m^-2 ~ s^-1))
-    ) +
+        ) +
     theme_bw() +
     theme(text = element_text(size = 20),legend.position = c(0.8, 0.2))
   
@@ -121,7 +121,6 @@ if(plot_type == 1){
     labs(x = bquote(Q~(mu*mol ~ m^-2 ~ s^-1)), 
          y = bquote(An~(mu*mol ~ m^-2 ~ s^-1))
     ) +
-    title
     theme_bw() +
     theme(text = element_text(size = 20),legend.position = c(0.8, 0.2))
 }

@@ -22,7 +22,7 @@ Vcmax_multiplier<-function(T_kelvin){
   return(multiplier)
 }
 
-BioCro_FvCB <- function(Qin,Tleaf,Ci,Vcmax,Jmax,Rd,TPU){
+BioCro_FvCB <- function(Qin,Tleaf,Ci,Vcmax_at_25,Jmax_at_25,Rd,TPU_at_25){
   # Make an alternate BioCro comparison; here we use BioCro:FvCB, so we have to
   # manually calculate the temperature response of several parameters using code
   # copied from c3photoC and slightly modified for R
@@ -69,7 +69,7 @@ BioCro_FvCB <- function(Qin,Tleaf,Ci,Vcmax,Jmax,Rd,TPU){
           Rd = Rd_at_25 * arrhenius_exponential(18.72, 46.39e3, Tleaf_K),
           Vcmax = Vcmax_at_25 * Vcmax_multiplier(Tleaf_K), #use a new temperature response function
           #Vcmax = Vcmax_at_25 * arrhenius_exponential(26.35, 65.33e3, Tleaf_K),
-          TPU = TPU * TPU_rate_multiplier,
+          TPU = TPU_at_25 * TPU_rate_multiplier,
           J = J
       )
   )
