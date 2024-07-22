@@ -1,0 +1,41 @@
+#This is for fitting the A-Ci curves of ePhotosynthesis
+#to match target Vcmax and Jmax
+# Clear the workspace
+rm(list=ls())
+# Load required packages
+# library(lattice)
+library(nloptr)
+library(PhotoGEA)
+library(BioCro)
+source('for_calibration_with_OBS/my_scripts/aci_defaults.R') #get_jmax function
+source('for_calibration_with_OBS/my_scripts/biocro_FvCB.R') #Vcmax_multiplier function
+source('aci_functions.R')
+
+obj_func<-function(x){
+  vcmax_target = 134.5
+  jmax_target  = 183
+  tpu_target   = 10.5
+  system(paste("./myephoto.exe",x[1],x[2],1))
+  ePhoto_result = read.table("output.data",header=FALSE,sep = ",")
+  A_Ci_df = as.data.frame(ePhoto_result)
+  colnames(A_Ci_df) = c("PAR","Tleaf","Ci","A")
+  output = get_vcmax_jmax(A_Ci_df)
+  vcmax = output[1]
+  jmax  = output[2]
+  tpu   = output[3]
+  
+  rmse = sqrt(((vcmax - vcmax_target)^2 + (jmax - jmax_target)^2 + (tpu - tpu_target)^2)/3)
+  return(rmse)
+}
+
+lbs = c(0.8,0.9) #alpha1, alpha2 
+ubs = c(1.0,1.1)
+init_guess = rep(1,length(lbs))
+
+opt_results = nloptr(x0 = init_guess, eval_f = obj_func, 
+                     lb = lbs,
+                     ub = ubs,
+                     opts = list("algorithm" = "NLOPT_LN_SBPLX","xtol_rel"=1.0e-6))
+alpha1_alpha2 = as.data.frame(opt_results$solution)
+rownames(alpha1_alpha2) = c('alpha1','alpha2')
+write.csv(alpha1_alpha2,"ePhotosynthesis_optimal_alpha1_alpha2.csv")

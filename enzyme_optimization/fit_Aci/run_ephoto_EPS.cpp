@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
    EPS_inputs my_inputs;
    double stoptime=5000.0, begintime=0.0, stepsize=0.5;
 //   double abstol=1e-5, reltol=1e-4;
-   double abstol=9.9e-6, reltol=1e-5;
+   double abstol=1e-6, reltol=1e-6;
    int maxSubSteps=2500;
    int i,curve_option; 
    double Ci;
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
    //std::cout<<my_inputs.alpha1<<","<<my_inputs.alpha2<<std::endl;
    std::remove("output.data");  //remove the old output file.
    if(curve_option==1){//A-Ci
-     double PAR= 400.0;
+     double PAR= 2000.0;
      double Tp = 25.0;
      std::vector<double> Cis = {100, 150, 200, 250, 300, 400, 500, 600, 800, 1200};
      for (i=0;i < Cis.size();i++) {
