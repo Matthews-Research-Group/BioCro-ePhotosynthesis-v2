@@ -7,7 +7,7 @@ get_vcmax_jmax <- function(A_Ci_df)
   aci_data_exdf$units$Ci = "micromol mol^(-1)"
   aci_data_exdf$units$A = "micromol m^(-2) s^(-1)"
   
-  #add a bogus constant pressure
+  #add a bogus constant Ca
   aci_data_exdf <- set_variable(
     aci_data_exdf,
     'Ca',
@@ -21,8 +21,17 @@ get_vcmax_jmax <- function(A_Ci_df)
     value = 1,
     units = 'bar'
   )
+  aci_data_exdf <- set_variable(
+    aci_data_exdf,
+    'oxygen',
+    value = 21,
+    units = 'percent'
+  )
   #calculate Kc, J_norm, Ko,Vcmax
   aci_data_exdf <- calculate_arrhenius(aci_data_exdf, c3_arrhenius_bernacchi,tleaf_column_name = 'Tleaf')
+  #overwrite arrehenius with a new vcmax temperature response
+  aci_data_exdf[, 'Vcmax_norm'] <- Vcmax_multiplier(aci_data_exdf[, 'Tleaf']+273.15)
+
   # Calculate Cc
   aci_data_exdf <- set_variable(
     aci_data_exdf,
@@ -34,8 +43,10 @@ get_vcmax_jmax <- function(A_Ci_df)
   aci_data_exdf <- apply_gm(aci_data_exdf)
   
   # We can fit just one curve from the data set, although it is rare to do this
-  MY_FIT_OPTIONS <-list(Rd_at_25 = soybean$parameters$Rd,
-                        Tp       = 14.6) #fixed TPU estimated from LD11
+  MY_FIT_OPTIONS <-list(Rd_at_25  = soybean$parameters$Rd,
+                        # Tp        = 10.5,#fixed TPU estimated from LD11
+                        alpha_old = 0 ) 
+
   c3_aci_results <- fit_c3_aci(
     aci_data_exdf,
     a_column_name = 'A',
@@ -64,7 +75,6 @@ get_vcmax_jmax <- function(A_Ci_df)
   # solve those equations for Jmax.
   leaf_reflectance   = 0.1
   leaf_transmittance = 0.05
-  scaling_factors = c(0.72, 0.64) #averaged from 2021 and 2022 
   soybean_ld11_fvcb_parameters$Jmax <- get_jmax(
     soybean$parameters$theta,              # dimensionless
     soybean$parameters$beta_PSII,          # dimensionless
@@ -72,8 +82,7 @@ get_vcmax_jmax <- function(A_Ci_df)
     leaf_reflectance,   # dimensionless
     25,                                    # degrees C
     leaf_transmittance, # dimensionless
-    mean(aci_data_exdf[, 'PAR']),              # micromol / m^2 / s
-    scaling_factors
+    mean(aci_data_exdf[, 'PAR'])              # micromol / m^2 / s
   )
   return(c(soybean_ld11_fvcb_parameters$Vcmax,soybean_ld11_fvcb_parameters$Jmax,soybean_ld11_fvcb_parameters$TPU))
 }
