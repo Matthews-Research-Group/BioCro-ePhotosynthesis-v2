@@ -6,7 +6,8 @@ rm(list=ls())
 # library(lattice)
 library(PhotoGEA)
 library(BioCro)
-source('for_calibration_with_OBS/aci_defaults.R') #get_jmax function
+source('for_calibration_with_OBS/my_scripts/aci_defaults.R') #get_jmax function
+source('for_calibration_with_OBS/my_scripts/biocro_FvCB.R') #Vcmax_multiplier function
 source('aci_functions.R')
 
 alpha1_or_alpha2 = "alpha2" #fit alpha1 or alpha2
@@ -16,15 +17,11 @@ if (alpha1_or_alpha2 == "alpha1"){
   alpha1_vec = seq(0.8,0.9,by=0.02)
   alpha2 = 1
 }else if (alpha1_or_alpha2 == "alpha2"){
-  alpha1 = 0.87 
-  alpha2_vec = seq(0.96,1.0,by=0.01) 
+  alpha1 = 0.89
+  alpha2_vec = seq(1.06,1.1,by=0.01) 
 }else{
   stop('no such option')
 }
-
-Ci = c(100, 150, 200, 250, 300, 400, 500, 600, 800, 1200) 
-Tleaf = 25
-PAR = 2000
 
 #note: currently, the PAR, Ci, and Tleaf for myephoto.exe are hard-coded
 #double check whether it's high or low light condition
@@ -34,7 +31,11 @@ if (alpha1_or_alpha2 == "alpha1"){
     #call ephoto c++
     system(paste("./myephoto.exe",alpha1,alpha2,curve_option))
     ePhoto_result = read.table("output.data",header=FALSE,sep = ",")
-    A_Ci_df = data.frame(A=ePhoto_result$V4,Ci=Ci,Tleaf=Tleaf,PAR=PAR)
+    A_Ci_df = as.data.frame(ePhoto_result)
+    colnames(A_Ci_df) = c("PAR","Tleaf","Ci","A")
+    # A_Ci_df$A1 = BioCro_FvCB(2000,25,A_Ci_df$Ci,134.5,183,1.28,10.5)
+    # A_Ci_df$A = A_Ci_df$A1$An
+    # A_Ci_df = A_Ci_df[,1:4]
     output = get_vcmax_jmax(A_Ci_df)
     vcmax = output[1]
     jmax  = output[2]
@@ -46,7 +47,8 @@ if (alpha1_or_alpha2 == "alpha1"){
     #call ephoto c++
     system(paste("./myephoto.exe",alpha1,alpha2,curve_option))
     ePhoto_result = read.table("output.data",header=FALSE,sep = ",")
-    A_Ci_df = data.frame(A=ePhoto_result$V4,Ci=Ci,Tleaf=Tleaf,PAR=PAR)
+    A_Ci_df = as.data.frame(ePhoto_result)
+    colnames(A_Ci_df) = c("PAR","Tleaf","Ci","A")
     output = get_vcmax_jmax(A_Ci_df)
     vcmax = output[1]
     jmax  = output[2]
