@@ -11,4 +11,6 @@ ephoto_path="$MAIN_DIR/models/ePhotosynthesis_C"
 # Get the directory of the conda env named "ephoto"
 conda_path=$(conda info --envs | grep ephoto | awk '{print $NF}')
 
-myclangcpp -o myephoto.exe -I$conda_path/include -I$ephoto_path/include run_ephoto_EPS.cpp -L$ephoto_path/build -lEPhotosynthesis -Wl,-rpath,$ephoto_path/build 
+myclangcpp -arch x86_64 -o myephoto.exe -I$conda_path/include -I$ephoto_path/include run_ephoto_EPS.cpp -L$ephoto_path/build -lEPhotosynthesis -Wl,-rpath,$ephoto_path/build 
+
+myclangcpp -arch x86_64 -o myephoto_single.exe -I$conda_path/include -I$ephoto_path/include run_ephoto_EPS_singlerun.cpp -L$ephoto_path/build -lEPhotosynthesis -Wl,-rpath,$ephoto_path/build 

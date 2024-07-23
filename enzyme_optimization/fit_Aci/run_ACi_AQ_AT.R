@@ -5,10 +5,12 @@ source("for_calibration_with_OBS/my_scripts/biocro_FvCB.R")
 alpha1_alpha2 = read.csv('ePhotosynthesis_optimal_alpha1_alpha2.csv')
 alpha1 = alpha1_alpha2[2]
 alpha2 = alpha1_alpha2[3]
-curve_option = 1 #1: A-Ci;2: A-Q; 3: A-T 
-output_figure_name = "figs/ACi_Q400_v1.pdf"
+curve_option = 3 #1: A-Ci;2: A-Q; 3: A-T 
+prefix = c("ACi","AQ","AT")
+PAR = 400
+output_figure_name = paste0("figs/",prefix[curve_option],"_Q",PAR,"_v1.pdf")
 #call ephoto c++
-system(paste("./myephoto_PAR400.exe",alpha1,alpha2,curve_option))
+system(paste("./myephoto.exe",alpha1,alpha2,PAR,curve_option))
 #read in ephoto results
 ephoto = read.csv("output.data",header=FALSE)
 colnames(ephoto) = c("PAR","Tleaf","Ci","An")
@@ -20,11 +22,15 @@ Rd25         <- 1.28
 TPU25        <- aci_fit_results$mean[aci_fit_results$parameter=="TPU_at_25"]
 #run Farquhar
 An_farquhar = NA*(1:dim(ephoto)[1])
+
 for (i in 1:dim(ephoto)[1]){
   #For Farquhar, we need the total Q, as there's a calculation of
   #absorption inside the Farquhar function
   output_farquhar  = BioCro_FvCB(ephoto$PAR[i],ephoto$Tleaf[i], ephoto$Ci[i], Vcmax25, Jmax25, Rd25, TPU25)
   An_farquhar[i]   = output_farquhar$An
+  #get ephoto's An
+  Rd = Rd25 * arrhenius_exponential(18.72, 46.39e3, ephoto$Tleaf[i]+273.15)
+  ephoto$An[i] = ephoto$An[i] - Rd
 }
 
 df_for_plot = cbind(ephoto,An_FvCB=An_farquhar)

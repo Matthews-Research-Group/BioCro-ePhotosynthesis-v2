@@ -66,8 +66,8 @@ void EPS_run(double begintime, double stoptime, double stepsize, double abstol, 
 //       std::cout<<"assim is "<<ResultRate[0]<<std::endl; 
 
        //write to file output.data, Append
-       std::ofstream outfile("output.data", std::ios::out | std::ios::app);
-       outfile << PAR<<","<<Tp<<","<<Ci<<","<<ResultRate[0] << std::endl;
+       std::ofstream outfile("output.data");
+       outfile << ResultRate[0] << std::endl;
        outfile.close();
         if (theVars != nullptr) {
             maindriver->inputVars= nullptr;
@@ -83,8 +83,8 @@ int main(int argc, char* argv[])
 //   double abstol=1e-5, reltol=1e-4;
    double abstol=1e-6, reltol=1e-6;
    int maxSubSteps=2500;
-   int i,curve_option; 
-   double PAR,Ci;
+   int i; 
+   double PAR,Tp,Ci;
    //passing in command line arguments
    //start with argv[1] since argv[0] is the program exe
    for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
@@ -96,34 +96,12 @@ int main(int argc, char* argv[])
        my_inputs.alpha2 = atof(argv[i]);
      } else if(i==3) {
        PAR = atof(argv[i]);
-     } else{
-       curve_option = atoi(argv[i]);
+     } else if(i==4) {
+       Tp  = atof(argv[i]);
+     } else if(i==5) {
+       Ci  = atof(argv[i]);
      }
    }
-   //std::cout<<my_inputs.alpha1<<","<<my_inputs.alpha2<<std::endl;
-   std::remove("output.data");  //remove the old output file.
-   if(curve_option==1){//A-Ci
-     double Tp = 25.0;
-     std::vector<double> Cis = {100, 150, 200, 250, 300, 400, 500, 600, 800, 1200};
-     for (i=0;i < Cis.size();i++) {
-      double Ci = Cis[i];
-      EPS_run(begintime, stoptime, stepsize, abstol, reltol, Tp, PAR, Ci, maxSubSteps,my_inputs);
-     }
-   }else if(curve_option==2){//A-Q
-     std::vector<double> PARs= {100,300,500,700,900,1100,1300,1500};
-     double Tp = 25.0;
-     double Ci = 400.0; 
-     for (i=0;i < PARs.size();i++) {
-      PAR = PARs[i];
-      EPS_run(begintime, stoptime, stepsize, abstol, reltol, Tp, PAR, Ci, maxSubSteps,my_inputs);
-     }
-   }else{//A-T
-     std::vector<double> Tps = {0,5,10,15,20,25,30,35,40};
-     double Ci = 400.0; 
-     for (i=0;i < Tps.size();i++) {
-      double Tp = Tps[i];
-      EPS_run(begintime, stoptime, stepsize, abstol, reltol, Tp, PAR, Ci, maxSubSteps,my_inputs);
-     }
-   }
+   EPS_run(begintime, stoptime, stepsize, abstol, reltol, Tp, PAR, Ci, maxSubSteps,my_inputs);
    return (0);
 }

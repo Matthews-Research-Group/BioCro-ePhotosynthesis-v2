@@ -44,7 +44,7 @@ get_vcmax_jmax <- function(A_Ci_df)
   
   # We can fit just one curve from the data set, although it is rare to do this
   MY_FIT_OPTIONS <-list(Rd_at_25  = soybean$parameters$Rd,
-                        # Tp        = 10.5,#fixed TPU estimated from LD11
+                        Tp        = 10.5,#fixed TPU estimated from LD11
                         alpha_old = 0 ) 
 
   c3_aci_results <- fit_c3_aci(

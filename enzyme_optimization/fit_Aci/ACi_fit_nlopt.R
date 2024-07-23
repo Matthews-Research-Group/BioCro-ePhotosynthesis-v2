@@ -12,19 +12,20 @@ source('for_calibration_with_OBS/my_scripts/biocro_FvCB.R') #Vcmax_multiplier fu
 source('aci_functions.R')
 
 obj_func<-function(x){
-#  vcmax_target = 134.5
-#  jmax_target  = 183
-#  tpu_target   = 10.5
   # Specify FvCB parameter values
   aci_fit_results <- read.csv("for_calibration_with_OBS/my_scripts/ld11_aci_fit_parameters_avg.csv")
   vcmax_target <- aci_fit_results$mean[aci_fit_results$parameter=="Vcmax_at_25"]
   jmax_target  <- aci_fit_results$mean[aci_fit_results$parameter=="Jmax_at_25"]
   Rd_at_25     <- 1.28
   tpu_target   <- aci_fit_results$mean[aci_fit_results$parameter=="TPU_at_25"]
-  system(paste("./myephoto.exe",x[1],x[2],1))
+  PAR = 2000
+  system(paste("./myephoto.exe",x[1],x[2],PAR,1))
   ePhoto_result = read.table("output.data",header=FALSE,sep = ",")
   A_Ci_df = as.data.frame(ePhoto_result)
   colnames(A_Ci_df) = c("PAR","Tleaf","Ci","A")
+  #ephoto's assimilation is the gross,which needs to substract Rd to get An
+  Rd = Rd_at_25 * arrhenius_exponential(18.72, 46.39e3, A_Ci_df$Tleaf+273.15) 
+  A_Ci_df$A = A_Ci_df$A - Rd 
   output = get_vcmax_jmax(A_Ci_df)
   vcmax = output[1]
   jmax  = output[2]
