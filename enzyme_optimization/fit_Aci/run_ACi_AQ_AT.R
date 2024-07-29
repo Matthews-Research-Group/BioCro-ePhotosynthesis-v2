@@ -7,8 +7,8 @@ alpha1 = alpha1_alpha2[2]
 alpha2 = alpha1_alpha2[3]
 curve_option = 3 #1: A-Ci;2: A-Q; 3: A-T 
 prefix = c("ACi","AQ","AT")
-PAR = 400
-output_figure_name = paste0("figs/",prefix[curve_option],"_Q",PAR,"_v1.pdf")
+PAR =400 
+output_figure_name = paste0("figs/",prefix[curve_option],"_Q",PAR,"_v2.pdf")
 #call ephoto c++
 system(paste("./myephoto.exe",alpha1,alpha2,PAR,curve_option))
 #read in ephoto results
@@ -39,16 +39,43 @@ df_for_plot = melt(df_for_plot, id.vars=c("PAR","Tleaf","Ci"))
 
 if(curve_option==1){
   myplot<-ggplot(data=df_for_plot,aes(x=Ci, y=value,colour=variable)) +
-       geom_line()  +  geom_point()
+       geom_line()  +  geom_point()+
+    labs(x = bquote(Ci~(ppm)),
+         y = bquote(An~(mu*mol ~ m^-2 ~ s^-1))
+    ) +
+    theme_bw() +
+    theme(text = element_text(size = 16),
+          legend.position = c(0.8, 0.2),
+          legend.title = element_blank(),
+          plot.margin = margin(0.5, 1, 0.5, 0.5, "cm") #(top, right, bottom, left)  
+         )
 }else if(curve_option==2){
   myplot<-ggplot(data=df_for_plot,aes(x=PAR, y=value,colour=variable)) +
-       geom_line()  +  geom_point()
+       geom_line()  +  geom_point()+
+    labs(x = bquote(Q~(mu*mol ~ m^-2 ~ s^-1)),
+         y = bquote(An~(mu*mol ~ m^-2 ~ s^-1))
+    ) +
+    theme_bw() +
+    theme(text = element_text(size = 16),
+          legend.position = c(0.8, 0.2),
+          legend.title = element_blank(),
+          plot.margin = margin(0.5, 1, 0.5, 0.5, "cm") #(top, right, bottom, left)  
+         )
 }else{
   myplot<-ggplot(data=df_for_plot,aes(x=Tleaf, y=value,colour=variable)) +
-       geom_line()  +  geom_point()
+       geom_line()  +  geom_point()+
+    labs(x = bquote(T~(degree*C)),
+         y = bquote(An~(mu*mol ~ m^-2 ~ s^-1))
+    ) +
+    theme_bw() +
+    theme(text = element_text(size = 16),
+          legend.position = c(0.8, 0.2),
+          legend.title = element_blank(),
+          plot.margin = margin(0.5, 1, 0.5, 0.5, "cm") #(top, right, bottom, left)  
+         )
 }
 # Save ggplot to PDF
-ggsave(output_figure_name, plot = myplot, width = 6, height = 4)
+ggsave(output_figure_name, plot = myplot, width = 6, height = 6)
 
 # df = cbind(Tleaf= ephoto$Tleaf,An = An_farquhar,Aj = Aj_farquhar, Ac = Ac_farquhar, Ap = Ap_farquhar)
 # df = as.data.frame(df)

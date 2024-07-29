@@ -3,9 +3,9 @@ library(ggplot2)
 library(BioCro)
 library(PhotoGEA)
 source("for_calibration_with_OBS/my_scripts/biocro_FvCB.R")
-plot_type = 2 #1:ACi; 2: AQ
+plot_type = 1 #1:ACi; 2: AQ
 prefix = c("ACi","AQ")
-output_figure_name = paste0("figs/",prefix[plot_type],"_with_OBS_v2_Pi30.pdf")
+output_figure_name = paste0("figs/",prefix[plot_type],"_with_OBS_vALLQ10.pdf")
 
 alpha1_alpha2 = read.csv('ePhotosynthesis_optimal_alpha1_alpha2.csv')
 alpha1 = alpha1_alpha2[2]
@@ -41,7 +41,7 @@ if(plot_type==1){
     An_FvCB[i]   = output_farquhar$An
   
     #call ephoto c++
-    system(paste("./myephoto_single_Pi30.exe",alpha1,alpha2,PAR,Tleaf, Ci))
+    system(paste("./myephoto_single.exe",alpha1,alpha2,PAR,Tleaf, Ci))
     #read in ephoto results
     ephoto = read.csv("output.data",header=FALSE)
     Rd = Rd25 * arrhenius_exponential(18.72, 46.39e3, Tleaf+273.15)
@@ -108,7 +108,7 @@ if(plot_type==1){
     An_FvCB[i]   = output_farquhar$An
   
     #call ephoto c++
-    system(paste("./myephoto_single_Pi30.exe",alpha1,alpha2,PAR,Tleaf, Ci))
+    system(paste("./myephoto_single.exe",alpha1,alpha2,PAR,Tleaf, Ci))
     #read in ephoto results
     ephoto = read.csv("output.data",header=FALSE)
     Rd = Rd25 * arrhenius_exponential(18.72, 46.39e3, Tleaf+273.15)
@@ -149,4 +149,17 @@ if(plot_type==1){
     theme(text = element_text(size = 20),legend.position = c(0.8, 0.2))
 # Save ggplot to PDF
   ggsave(output_figure_name, plot = myplot, width = 6, height = 6)
+}
+
+if(FALSE){
+q10=2
+tleaf = seq(5,40,by=5)
+y = q10^((tleaf-25)/10)
+plot(tleaf,y,type='l')
+q10 = 1.5
+y = q10^((tleaf-25)/10)
+lines(tleaf,y,col='red')
+q10 = 2.5
+y = q10^((tleaf-25)/10)
+lines(tleaf,y,col='blue')
 }
