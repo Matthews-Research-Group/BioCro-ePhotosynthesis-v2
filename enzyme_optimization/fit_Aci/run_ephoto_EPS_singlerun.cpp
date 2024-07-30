@@ -119,6 +119,7 @@ int main(int argc, char* argv[])
     };
    //passing in command line arguments
    //start with argv[1] since argv[0] is the program exe
+//       std::cout<<"argc is "<<argc<<std::endl; 
    if (argc==6){
      for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
                                  * Note that we're starting on 1 because we don't need to know the 
@@ -150,7 +151,7 @@ int main(int argc, char* argv[])
        } else if(i==5) {
          Ci  = atof(argv[i]);
        }else{
-        *(Q10_pointers[i]) = atof(argv[i]);
+        *(Q10_pointers[i-6]) = atof(argv[i]);
        }
      }
    }else{
