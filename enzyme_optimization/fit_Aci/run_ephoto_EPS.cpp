@@ -18,6 +18,17 @@ struct EPS_inputs
 {
     double alpha1=1.0;
     double alpha2=1.0;
+    double Q10_1  = 1.93;
+    double Q10_2  = 2.0;
+    double Q10_3  = 2.0;
+    double Q10_5  = 2.0;
+    double Q10_6  = 2.0;
+    double Q10_7  = 2.0;
+    double Q10_8  = 2.0;
+    double Q10_9  = 2.0;
+    double Q10_10 = 2.0;
+    double Q10_13 = 2.0;
+    double Q10_23 = 2.0;
 };
 
 void EPS_run(double begintime, double stoptime, double stepsize, double abstol, double reltol, double Tp,double PAR, double Ci, int maxSubSteps,const EPS_inputs& EPSinput)
@@ -45,6 +56,17 @@ void EPS_run(double begintime, double stoptime, double stepsize, double abstol, 
        theVars->EnzymeAct.at("V13") *= EPSinput.alpha2;
        theVars->EnzymeAct.at("V23") *= EPSinput.alpha2;
 
+       theVars->Q10_1  = EPSinput.Q10_1; 
+       theVars->Q10_2  = EPSinput.Q10_2; 
+       theVars->Q10_3  = EPSinput.Q10_3; 
+       theVars->Q10_5  = EPSinput.Q10_5; 
+       theVars->Q10_6  = EPSinput.Q10_6; 
+       theVars->Q10_7  = EPSinput.Q10_7; 
+       theVars->Q10_8  = EPSinput.Q10_8; 
+       theVars->Q10_9  = EPSinput.Q10_9; 
+       theVars->Q10_10 = EPSinput.Q10_10;
+       theVars->Q10_13 = EPSinput.Q10_13;
+       theVars->Q10_23 = EPSinput.Q10_23;
        //remove Ca and Light inputs from the text file. Instead, they are function inputs
        //theVars->TestCa = static_cast<double>(stof(inputs.at("CO2"), nullptr));
        //theVars->TestLi = static_cast<double>(stof(inputs.at("PAR"), nullptr));
@@ -85,22 +107,48 @@ int main(int argc, char* argv[])
    int maxSubSteps=2500;
    int i,curve_option; 
    double PAR,Ci;
+    std::vector<double*> Q10_pointers = {
+        &my_inputs.Q10_1,  &my_inputs.Q10_2, &my_inputs.Q10_3,
+        &my_inputs.Q10_5,  &my_inputs.Q10_6, &my_inputs.Q10_7,
+        &my_inputs.Q10_8,  &my_inputs.Q10_9, &my_inputs.Q10_10,
+        &my_inputs.Q10_13, &my_inputs.Q10_23
+    };
    //passing in command line arguments
    //start with argv[1] since argv[0] is the program exe
-   for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
-                               * Note that we're starting on 1 because we don't need to know the 
-                               * path of the program, which is stored in argv[0] */
-     if (i==1) {
-       my_inputs.alpha1 = atof(argv[i]);
-     } else if(i==2) {
-       my_inputs.alpha2 = atof(argv[i]);
-     } else if(i==3) {
-       PAR = atof(argv[i]);
-     } else{
-       curve_option = atoi(argv[i]);
+   if (argc==5){
+     for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
+                                 * Note that we're starting on 1 because we don't need to know the 
+                                 * path of the program, which is stored in argv[0] */
+       if (i==1) {
+         my_inputs.alpha1 = atof(argv[i]);
+       } else if(i==2) {
+         my_inputs.alpha2 = atof(argv[i]);
+       } else if(i==3) {
+         PAR = atof(argv[i]);
+       } else{
+         curve_option = atoi(argv[i]);
+       }
      }
+   }else if (argc==16){
+     for (int i = 1; i < argc; i++) { 
+       if (i==1) {
+         my_inputs.alpha1 = atof(argv[i]);
+       } else if(i==2) {
+         my_inputs.alpha2 = atof(argv[i]);
+       } else if(i==3) {
+         PAR = atof(argv[i]);
+       } else if(i==4) {
+         curve_option = atoi(argv[i]);
+       }else{
+        *(Q10_pointers[i-5]) = atof(argv[i]);
+       }
+     }
+   }else{
+        // If an error occurs
+     std::cerr << "Error: incorrect number of input arguments" << std::endl;
+     std::exit(EXIT_FAILURE); // or std::exit(1);
    }
-   //std::cout<<my_inputs.alpha1<<","<<my_inputs.alpha2<<std::endl;
+
    std::remove("output.data");  //remove the old output file.
    if(curve_option==1){//A-Ci
      double Tp = 25.0;

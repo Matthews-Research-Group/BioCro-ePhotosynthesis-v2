@@ -1,16 +1,22 @@
 library(reshape2)
 library(ggplot2)
 library(BioCro)
+rm(list=ls())
 source("for_calibration_with_OBS/my_scripts/biocro_FvCB.R")
+Q10s = read.csv('ePhotosynthesis_optimal_Q10s_ACi_v2.csv')
+Q10s = Q10s[-1]
 alpha1_alpha2 = read.csv('ePhotosynthesis_optimal_alpha1_alpha2.csv')
 alpha1 = alpha1_alpha2[2]
 alpha2 = alpha1_alpha2[3]
 curve_option = 3 #1: A-Ci;2: A-Q; 3: A-T 
 prefix = c("ACi","AQ","AT")
-PAR =400 
-output_figure_name = paste0("figs/",prefix[curve_option],"_Q",PAR,"_v2.pdf")
+PAR = 400 
+output_figure_name = paste0("figs/",prefix[curve_option],"_Q",PAR,"_Q10opt_v2.pdf")
+executable_path <- "./myephoto.exe" 
 #call ephoto c++
-system(paste("./myephoto.exe",alpha1,alpha2,PAR,curve_option))
+all_args = c(executable_path,alpha1,alpha2,PAR,curve_option,Q10s)
+cmd = do.call(paste, all_args) 
+system(cmd)
 #read in ephoto results
 ephoto = read.csv("output.data",header=FALSE)
 colnames(ephoto) = c("PAR","Tleaf","Ci","An")
