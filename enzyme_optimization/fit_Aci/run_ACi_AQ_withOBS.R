@@ -2,14 +2,20 @@ library(reshape2)
 library(ggplot2)
 library(BioCro)
 library(PhotoGEA)
+rm(list=ls())
 source("for_calibration_with_OBS/my_scripts/biocro_FvCB.R")
-plot_type = 1 #1:ACi; 2: AQ
+plot_type = 2 #1:ACi; 2: AQ
 prefix = c("ACi","AQ")
-output_figure_name = paste0("figs/",prefix[plot_type],"_with_OBS_vALLQ10.pdf")
+output_figure_name = paste0("figs/",prefix[plot_type],"_with_OBS_Q10_opt_v1.pdf")
+
+executable_path <- "./myephoto_single.exe" 
 
 alpha1_alpha2 = read.csv('ePhotosynthesis_optimal_alpha1_alpha2.csv')
 alpha1 = alpha1_alpha2[2]
 alpha2 = alpha1_alpha2[3]
+
+Q10s = read.csv('ePhotosynthesis_optimal_Q10s_ACi_v1.csv')
+Q10s = Q10s[-1]
 
 aci_fit_results <- read.csv("for_calibration_with_OBS/my_scripts/ld11_aci_fit_parameters_avg.csv")
 Vcmax25      <- aci_fit_results$mean[aci_fit_results$parameter=="Vcmax_at_25"]
@@ -41,11 +47,16 @@ if(plot_type==1){
     An_FvCB[i]   = output_farquhar$An
   
     #call ephoto c++
-    system(paste("./myephoto_single.exe",alpha1,alpha2,PAR,Tleaf, Ci))
-    #read in ephoto results
-    ephoto = read.csv("output.data",header=FALSE)
+    args = c(alpha1,alpha2,PAR,Tleaf, Ci,Q10s)
+    args = as.numeric(args)
+    ephoto<-system2(executable_path, args = args, stdout = TRUE, stderr = TRUE)
+    if(length(ephoto)!=1) {
+      print(ephoto)
+      ephoto = tail(ephoto,1)
+    }
+    ephoto =  as.numeric(ephoto)
     Rd = Rd25 * arrhenius_exponential(18.72, 46.39e3, Tleaf+273.15)
-    An_ePhoto[i] = ephoto[1] - Rd
+    An_ePhoto[i] = ephoto - Rd
   }
   An_ePhoto = as.numeric(An_ePhoto)
   df = data.frame(Ci=Ci_all,An_ePhoto,An_FvCB,An_obs,curve_identifier)
@@ -67,7 +78,7 @@ if(plot_type==1){
   sd_FvCB     = apply(An_FvCB,1,sd)
   sd_obs      = apply(An_obs,1,sd)
   df_avg = xx/length(unique_identifier)
-  df_melt = melt(df_avg,id.vars = c("Ci"),variable.name = "variable", value.name = "value")
+  df_melt = reshape2::melt(df_avg,id.vars = c("Ci"),variable.name = "variable", value.name = "value")
   df_melt = cbind(df_melt,sd = c(sd_ePhoto,sd_FvCB,sd_obs))
   myplot<-ggplot(df_melt, aes(x = Ci, y = value, color = variable)) +
     geom_line() + geom_point(size=3) +
@@ -108,11 +119,16 @@ if(plot_type==1){
     An_FvCB[i]   = output_farquhar$An
   
     #call ephoto c++
-    system(paste("./myephoto_single.exe",alpha1,alpha2,PAR,Tleaf, Ci))
-    #read in ephoto results
-    ephoto = read.csv("output.data",header=FALSE)
+    args = c(alpha1,alpha2,PAR,Tleaf, Ci,Q10s)
+    args = as.numeric(args)
+    ephoto<-system2(executable_path, args = args, stdout = TRUE, stderr = TRUE)
+    if(length(ephoto)!=1) {
+      print(ephoto)
+      ephoto = tail(ephoto,1)
+    }
+    ephoto =  as.numeric(ephoto)
     Rd = Rd25 * arrhenius_exponential(18.72, 46.39e3, Tleaf+273.15)
-    An_ePhoto[i] = ephoto[1] - Rd
+    An_ePhoto[i] = ephoto - Rd
   }
   An_ePhoto = as.numeric(An_ePhoto)
 
@@ -135,7 +151,7 @@ if(plot_type==1){
   sd_FvCB     = apply(An_FvCB,1,sd)
   sd_obs      = apply(An_obs,1,sd)
   df_avg = xx/length(unique_identifier)
-  df_melt = melt(df_avg,id.vars = c("Qin"),variable.name = "variable", value.name = "value")
+  df_melt = reshape2::melt(df_avg,id.vars = c("Qin"),variable.name = "variable", value.name = "value")
   df_melt = cbind(df_melt,sd = c(sd_ePhoto,sd_FvCB,sd_obs))
   myplot<-ggplot(df_melt, aes(x = Qin, y = value, color = variable)) +
     geom_line() + geom_point(size=3) +
@@ -149,17 +165,4 @@ if(plot_type==1){
     theme(text = element_text(size = 20),legend.position = c(0.8, 0.2))
 # Save ggplot to PDF
   ggsave(output_figure_name, plot = myplot, width = 6, height = 6)
-}
-
-if(FALSE){
-q10=2
-tleaf = seq(5,40,by=5)
-y = q10^((tleaf-25)/10)
-plot(tleaf,y,type='l')
-q10 = 1.5
-y = q10^((tleaf-25)/10)
-lines(tleaf,y,col='red')
-q10 = 2.5
-y = q10^((tleaf-25)/10)
-lines(tleaf,y,col='blue')
 }
