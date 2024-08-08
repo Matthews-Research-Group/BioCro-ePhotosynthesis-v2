@@ -1,12 +1,28 @@
 library(BioCro)
 library(PhotoGEA)
+library(nloptr)
 source("for_calibration_with_OBS/my_scripts/biocro_FvCB.R")
 source("obj_functions.R")
 curve_type = 1 #1:ACi; 2: AQ
 prefix = c("ACi","AQ")
 outfile_prefix = prefix[curve_type]
 
-number_of_enzymes = 11 #total number of Q10 to be optimized
+all_enzymes = c( 'Q10_1',  'Q10_2', 'Q10_3',
+                 'Q10_5',  'Q10_6', 'Q10_7',
+                 'Q10_8',  'Q10_9', 'Q10_10',
+                 'Q10_13', 'Q10_23')
+#the default values of these enzymes
+targets_all = c(1.93,rep(2.0,length(all_enzymes)-1))
+names(targets_all) = all_enzymes
+ 
+enzymes_to_optimize = c( 'Q10_1',  'Q10_2', 'Q10_3',
+                         'Q10_5',  'Q10_6', 'Q10_7',
+                         'Q10_8',  'Q10_9', 'Q10_10',
+                         'Q10_13', 'Q10_23')
+number_of_enzymes = length(enzymes_to_optimize) #total number of Q10 to be optimized
+#the default values of these enzymes
+targets = targets_all[all_enzymes%in%enzymes_to_optimize]
+names(targets) = enzymes_to_optimize
 
 executable_path <- "./myephoto_single.exe"
 
@@ -43,77 +59,46 @@ if(curve_type==1){
   curve_identifier = paste(date,licor_data[, 'instrument'],licor_data[, 'plot'],licor_data[, 'replicate'],sep='-')
   
   An_obs = licor_data[,'A']
-
-  An_FvCB     = NA* 1:length(Tleaf_all)
-  An_ePhoto   = NA* 1:length(Tleaf_all)
-   
-  for (i in 1:length(Tleaf_all)){ 
-    PAR = Qin_all[i]
-    Tleaf = Tleaf_all[i]
-    Ci  = Ci_all[i]
-    #For Farquhar, we need the total Q, as there's a calculation of
-    #absorption inside the Farquhar function
-    output_farquhar  = BioCro_FvCB(PAR,Tleaf, Ci, Vcmax25, Jmax25, Rd25, TPU25)
-    An_FvCB[i]   = output_farquhar$An
-  
-    #call ephoto c++
-    args = c(alpha1,alpha2,PAR,Tleaf, Ci)
-    ephoto<-system2(executable_path, args = args, stdout = TRUE, stderr = TRUE)
-    ephoto =  as.numeric(ephoto)
-    Rd = Rd25 * arrhenius_exponential(18.72, 46.39e3, Tleaf+273.15)
-    An_ePhoto[i] = ephoto - Rd
-  }
-  An_ePhoto = as.numeric(An_ePhoto)
-
-  df = data.frame(Qin=Qin_all,An_ePhoto,An_FvCB,An_obs,curve_identifier)
-
-  #plot average line
-  unique_identifier = unique(df$curve_identifier)
-  xx = 0
-  An_ePhoto  = c()
-  An_FvCB    = c()
-  An_obs     = c()
-  for (id in unique_identifier){
-    tmp = df[df$curve_identifier == id,1:4]
-    xx = xx + tmp
-    An_ePhoto = cbind(An_ePhoto,tmp$An_ePhoto)
-    An_FvCB   = cbind(An_FvCB  ,tmp$An_FvCB)
-    An_obs    = cbind(An_obs   ,tmp$An_obs)
-  }
-  sd_ePhoto   = apply(An_ePhoto,1,sd)
-  sd_FvCB     = apply(An_FvCB,1,sd)
-  sd_obs      = apply(An_obs,1,sd)
-  df_avg = xx/length(unique_identifier)
-  df_melt = melt(df_avg,id.vars = c("Qin"),variable.name = "variable", value.name = "value")
-  df_melt = cbind(df_melt,sd = c(sd_ePhoto,sd_FvCB,sd_obs))
 }
 
 
-lbs = rep(1.0,number_of_enzymes) 
-ubs = rep(3.0,number_of_enzymes)
+lbs = rep(1.5,number_of_enzymes) 
+ubs = rep(2.5,number_of_enzymes)
 init_guess = rep(2.0,length(lbs))
 
-opt_results = nloptr(x0 = init_guess, eval_f = obj_Q10, 
+#You can set lambda to 0 to NOT use LASSO
+lambda = 0.1
+
+constants_list = list(curve_type    = curve_type,
+                 alpha1        = alpha1,
+                 alpha2        = alpha2,
+                 Vcmax25       = Vcmax25,
+                 Jmax25        = Jmax25,
+                 Rd25          = Rd25,
+                 TPU25         = TPU25,
+                 Tleaf_all     = Tleaf_all,
+                 Qin_all       = Qin_all,
+                 Ci_all        = Ci_all,
+                 curve_identifier = curve_identifier,
+                 An_obs        = An_obs,
+                 targets_all   = targets_all,
+                 targets       = targets
+                 )
+# Define the objective function for nloptr, including constant parameters
+objective_function <- function(params) {
+  lasso_obj_function(params, constants_list, lambda)
+}
+
+opt_results = nloptr(x0 = init_guess, eval_f = objective_function, 
                      lb = lbs,
                      ub = ubs,
-                     opts = list("algorithm" = "NLOPT_LN_SBPLX","xtol_rel"=1.0e-4,"print_level"=0),
-                     curve_type =  curve_type,
-                     alpha1_alpha2 = alpha1_alpha2,
-                     Vcmax25 = Vcmax25,
-                     Jmax25  = Jmax25,
-                     Rd25    = Rd25,
-                     TPU25   = TPU25,
-                     Tleaf_all = Tleaf_all,Qin_all=Qin_all,
-                     Ci_all = Ci_all,curve_identifier=curve_identifier,
-                     An_obs = An_obs
+                     opts = list("algorithm" = "NLOPT_LN_SBPLX","xtol_rel"=1.0e-4,"print_level"= 1)
                      )
+
 Q10s  = as.data.frame(opt_results$solution)
-rownames(Q10s) = c( 'Q10_1',  'Q10_2', 'Q10_3',
-                    'Q10_5',  'Q10_6', 'Q10_7',
-                    'Q10_8',  'Q10_9', 'Q10_10',
-                    'Q10_13', 'Q10_23')
+rownames(Q10s) = names(targets)
 Q10s  = t(Q10s)
-write.csv(Q10s,paste0("ePhotosynthesis_optimal_Q10s_",outfile_prefix,"_v1.csv"))
+write.csv(Q10s,paste0("Q10_fitting_results/ePhotosynthesis_optimal_Q10s_",outfile_prefix,"_v5_LASSO.csv"))
 
 if(FALSE){
 q10=2
